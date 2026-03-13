@@ -55,10 +55,12 @@ def main():
 
     # 3. Call Groq LLM to generate the report content
     logging.info("[Step 2/3] Analyzing data with Groq LLM...")
+    api_key = os.getenv("GROQ_API_KEY")
     agent = DDRAgent()
-    report_json = agent.generate_report_data(
+    report_json = agent.run_agent(
         inspection_text=inspection_data["text"],
-        thermal_text=thermal_data["text"]
+        thermal_text=thermal_data["text"],
+        api_key=api_key
     )
     
     # Save intermediate JSON for debugging/audit

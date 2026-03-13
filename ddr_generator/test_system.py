@@ -113,7 +113,9 @@ def run_tests():
     try:
         agent = DDRAgent()
         if text_extracted and groq_success:
-            json_res = agent.generate_report_data("mock inspection", "mock thermal")
+            from dotenv import load_dotenv
+            load_dotenv()
+            json_res = agent.run_agent("mock inspection", "mock thermal", os.getenv("GROQ_API_KEY", ""))
             required_keys = ["property_summary", "area_observations", "root_cause", 
                            "severity_assessment", "recommended_actions", "additional_notes", "missing_information"]
             if all(key in json_res for key in required_keys):

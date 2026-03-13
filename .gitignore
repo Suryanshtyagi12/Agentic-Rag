@@ -17,3 +17,6 @@ __pycache__/
 # Ignore generated output files (optional, but good practice)
 data/output/*.html
 data/output/*.json
+
+# Streamlit secrets
+.streamlit/

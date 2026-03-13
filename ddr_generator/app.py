@@ -16,8 +16,17 @@ from src.agent import DDRAgent
 from src.report_generator import ReportGenerator
 from dotenv import load_dotenv
 
-# Load environment varilables
+# Load environment variables (fallback if not using secrets, but secrets preferred in Streamlit)
 load_dotenv()
+
+try:
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+except (FileNotFoundError, KeyError):
+    groq_api_key = None
+
+if not groq_api_key:
+    st.error("API key not configured. Contact the app owner.")
+    st.stop()
 
 # App Configuration
 st.set_page_config(
@@ -83,11 +92,9 @@ with st.sidebar:
     st.header("⚙️ Agentic-RAG Settings")
     st.write("Configure connection & LLM parameters.")
     
-    with st.expander("🔑 API Keys", expanded=True):
-        api_key_input = st.text_input("Groq API Key", value=os.getenv("GROQ_API_KEY", ""), type="password", help="Providing an API key here overrides the .env file")
-        if api_key_input and api_key_input != os.getenv("GROQ_API_KEY"):
-            os.environ["GROQ_API_KEY"] = api_key_input
-            
+    with st.expander("🔑 Access Control", expanded=True):
+        st.success("API Key securely loaded from Streamlit Secrets.")
+        
     with st.expander("🧠 Model Params", expanded=False):
         model_name = st.selectbox("LLM Model", ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "llama3-8b-8192"])
         temperature = st.slider("Creativity (Temperature)", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
@@ -130,9 +137,7 @@ with tab_upload:
     st.markdown("<br>", unsafe_allow_html=True)
     
     if st.button("⚡ Synthesize & Generate DDR", use_container_width=True):
-        if not api_key_input and not os.getenv("GROQ_API_KEY"):
-            st.error("🚨 Please provide a valid Groq API Key in the sidebar or .env file.")
-        elif not inspection_file or not thermal_file:
+        if not inspection_file or not thermal_file:
             st.warning("⚠️ Please upload BOTH the Inspection Report and the Thermal Report PDFs to proceed.")
         else:
             # Step 1: Save the uploaded files to disk
@@ -162,12 +167,8 @@ with tab_upload:
                     st.write(f"🧠 Synthesizing data with Groq ({model_name})...")
                     agent = DDRAgent()
                     
-                    if api_key_input:
-                        from groq import Groq
-                        agent.client = Groq(api_key=api_key_input)
-                    
                     agent.model = model_name
-                    report_json = agent.generate_report_data(data1["text"], data2["text"])
+                    report_json = agent.run_agent(data1["text"], data2["text"], groq_api_key)
                     st.session_state.report_json = report_json
                     
                     # Generate HTML

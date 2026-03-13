@@ -8,12 +8,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 class DDRAgent:
     def __init__(self):
-        """Initializes the Groq client for the DDR Agent."""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key or api_key == "your_api_key_here":
-            logging.warning("GROQ_API_KEY is not set or is still the default value.")
-            
-        self.client = Groq(api_key=api_key)
+        """Initializes the DDR Agent properties."""
         self.model = "llama-3.3-70b-versatile"
         
         self.system_prompt = (
@@ -24,11 +19,16 @@ class DDRAgent:
             "Flag conflicts clearly. Use simple client-friendly language."
         )
 
-    def generate_report_data(self, inspection_text: str, thermal_text: str) -> dict:
+    def run_agent(self, inspection_text: str, thermal_text: str, api_key: str) -> dict:
         """
-        Takes parsed text from both documents, merges them, removes duplicates,
+        Takes parsed text from both documents and the API key, merges them, removes duplicates,
         flags conflicts, and returns a structured JSON dictionary.
         """
+        if not api_key:
+            logging.error("API Key must be provided to run_agent.")
+            return {"error": "Missing API Key"}
+            
+        client = Groq(api_key=api_key)
         user_prompt = (
             "Please analyze, merge, and structure the following two reports into the requested JSON format.\n"
             "Merge the data logically, remove obvious duplicates, and flag any conflicting information between "
@@ -39,7 +39,7 @@ class DDRAgent:
 
         try:
             logging.info(f"Calling Groq API using model '{self.model}'...")
-            chat_completion = self.client.chat.completions.create(
+            chat_completion = client.chat.completions.create(
                 messages=[
                     {
                         "role": "system",
