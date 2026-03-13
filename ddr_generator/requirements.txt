@@ -2,3 +2,4 @@ groq
 PyMuPDF
 Jinja2
 python-dotenv
+streamlit
