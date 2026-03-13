@@ -21,40 +21,59 @@
     
     <div class="section">
         <h2>1. Property Issue Summary</h2>
-        <div>The property at 123 Main St, Springfield, was inspected on 2023-10-25, revealing various issues with the roof, basement, and electrical system.</div>
+        <div>{'property_name': 'Green Valley Apartments', 'inspection_date': '10 March 2026', 'inspectors': ['Rahul Sharma', 'Aditi Mehta']}</div>
     </div>
 
     <div class="section">
         <h2>2. Area-wise Observations</h2>
-        <div>{'Roof': 'Shingle roof shows signs of wear and minor curling. Flashing around the chimney appears loose. Gutters on the east side are clogged.', 'Basement': 'Musty smell, visible water stains on the north foundation wall, and standing water in the sump pump pit.', 'Electrical': 'Outdated main electrical panel, double-tapped circuits, and exposed wiring near the water heater.'}</div>
+        <div>{'living_room': {'visual_inspection': 'Visible structural crack near the window frame, approx. 1.2 meters long', 'thermal_imaging': 'Temperature difference of ~7°C near the crack area, suggesting possible air leakage'}, 'bedroom': {'visual_inspection': 'Moisture patch and peeling paint on ceiling corner, possible water leakage from upper floor', 'thermal_imaging': 'Lower temperature zone detected, indicating moisture accumulation'}, 'kitchen': {'visual_inspection': 'Cabinet wood appears swollen, indicating long-term moisture exposure', 'thermal_imaging': 'No major thermal anomalies detected, moisture presence cannot be confirmed'}}</div>
         
         <!-- Display Images associated with observations -->
+        
+        <div class="images-grid">
+            
+            <div class="image-card">
+                <img src="images/inspection_streamlit_page1_img1_pos1.png" alt="Observation Image Page 1">
+                <div class="image-caption">Page 1 Image</div>
+            </div>
+            
+            <div class="image-card">
+                <img src="images/inspection_streamlit_page1_img2_pos1.png" alt="Observation Image Page 1">
+                <div class="image-caption">Page 1 Image</div>
+            </div>
+            
+            <div class="image-card">
+                <img src="images/thermal_streamlit_page1_img1_pos1.png" alt="Observation Image Page 1">
+                <div class="image-caption">Page 1 Image</div>
+            </div>
+            
+        </div>
         
     </div>
 
     <div class="section">
         <h2>3. Probable Root Cause</h2>
-        <div>Potential causes include inadequate maintenance, water intrusion, and outdated electrical components.</div>
+        <div>Not Available</div>
     </div>
 
     <div class="section">
         <h2>4. Severity Assessment</h2>
-        <div class="severity">Moderate to severe issues were found, particularly with the roof and basement, which may lead to further damage if not addressed.</div>
+        <div class="severity">{'living_room': 'Moderate - possible air leakage and structural crack', 'bedroom': 'High - possible water leakage and moisture accumulation', 'kitchen': 'Moderate - long-term moisture exposure'}</div>
     </div>
 
     <div class="section">
         <h2>5. Recommended Actions</h2>
-        <div>['Repair or replace loose chimney flashing', 'Clean and maintain gutters', 'Investigate and address the source of water stains in the basement', 'Update the main electrical panel and address double-tapped circuits and exposed wiring']</div>
+        <div>{'living_room': 'Seal the structural crack and inspect for air leakage', 'bedroom': 'Investigate and repair water leakage source, dry and repaint the ceiling', 'kitchen': 'Inspect and repair moisture source, replace swollen cabinet wood'}</div>
     </div>
 
     <div class="section">
         <h2>6. Additional Notes</h2>
-        <div>Thermal imaging revealed a significant cold spot near the chimney flashing area and widespread moisture behind the drywall/concrete in the basement. Elevated temperatures were detected in two breakers, indicating potential overloading or loose connections.</div>
+        <div>Conflict: Thermal imaging could not confirm moisture presence in the kitchen, while visual inspection suggests long-term moisture exposure.</div>
     </div>
 
     <div class="section">
         <h2>7. Missing or Unclear Information</h2>
-        <div>Not Available</div>
+        <div>Root cause of the issues, detailed repair costs and timelines</div>
     </div>
 </body>
 </html>
