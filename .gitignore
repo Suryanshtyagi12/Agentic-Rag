@@ -1,0 +1,19 @@
+# Environment variables MUST BE IGNORED
+.env
+
+# Ignore Virtual Environment
+venv/
+env/
+.venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# IDEs
+.vscode/
+.idea/
+
+# Ignore generated output files (optional, but good practice)
+data/output/*.html
+data/output/*.json

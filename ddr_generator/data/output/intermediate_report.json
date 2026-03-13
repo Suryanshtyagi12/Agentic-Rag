@@ -1,0 +1,18 @@
+{
+    "property_summary": "The property at 123 Main St, Springfield, was inspected on 2023-10-25, revealing various issues with the roof, basement, and electrical systems.",
+    "area_observations": {
+        "Roof": "Shingle roof shows signs of wear and minor curling. Flashing around the chimney appears loose. Gutters on the east side are clogged.",
+        "Basement": "Musty smell, visible water stains on the north foundation wall, and standing water in the sump pump pit.",
+        "Electrical": "Outdated main electrical panel, double-tapped circuits, and exposed wiring near the water heater."
+    },
+    "root_cause": "Potential causes include inadequate maintenance, poor installation, and age-related wear and tear.",
+    "severity_assessment": "Moderate to severe issues were found, particularly with the roof and basement, which could lead to further damage if not addressed.",
+    "recommended_actions": [
+        "Repair or replace loose chimney flashing",
+        "Clean or replace clogged gutters",
+        "Investigate and address the source of water stains in the basement",
+        "Update the main electrical panel and address double-tapped circuits and exposed wiring"
+    ],
+    "additional_notes": "Thermal imaging revealed a significant cold spot near the chimney flashing area and widespread moisture behind the drywall/concrete in the basement. Elevated temperatures were detected in two breakers, indicating potential overloading or loose connections.",
+    "missing_information": "Not Available"
+}

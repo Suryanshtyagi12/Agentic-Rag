@@ -1,0 +1,7 @@
+import os
+from contextlib import contextmanager
+
+@contextmanager
+def preserve_cwd():
+    """Preserve current working directory."""
+    pass
