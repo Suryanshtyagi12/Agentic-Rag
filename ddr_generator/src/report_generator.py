@@ -5,11 +5,13 @@ from jinja2 import Environment, FileSystemLoader
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class ReportGenerator:
-    def __init__(self, template_dir: str = "templates", output_dir: str = "data/output"):
+    def __init__(self, template_dir: str = None, output_dir: str = None):
         """Initializes the Report Generator with template and output directories."""
-        self.template_dir = template_dir
-        self.output_dir = output_dir
+        self.template_dir = template_dir or os.path.join(BASE_DIR, "templates")
+        self.output_dir = output_dir or os.path.join(BASE_DIR, "data", "output")
         
         # Ensure output directory exists
         os.makedirs(self.output_dir, exist_ok=True)

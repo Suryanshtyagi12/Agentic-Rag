@@ -64,9 +64,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize output and input directories
-INPUT_DIR = "data/input"
-OUTPUT_DIR = "data/output"
+# Initialize output and input directories using absolute paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+INPUT_DIR = os.path.join(BASE_DIR, "data", "input")
+OUTPUT_DIR = os.path.join(BASE_DIR, "data", "output")
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
