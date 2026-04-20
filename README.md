@@ -8,11 +8,12 @@ An intelligent Retrieval-Augmented Generation (RAG) system powered by Groq's ult
 
 ## 🚀 Features
 
-- 📄 PDF ingestion and chunking
-- 🧠 Vector-based semantic search
-- ⚡ Groq LLM for lightning-fast responses
-- 🖥️ Streamlit interactive UI
-- 🔗 Agentic multi-step reasoning pipeline
+- 📄 **PDF Ingestion** — text, tables (pdfplumber), and images (PyMuPDF) extracted and chunked
+- 🧠 **Semantic Search** — `all-MiniLM-L6-v2` embeddings stored in FAISS
+- ⚡ **Groq LLM** — `llama3-70b-8192` for ultra-fast responses
+- 🔗 **Agentic Loop** — Think → Retrieve → Evaluate → Answer (up to 3 iterations)
+- 🖥️ **Streamlit UI** — Upload PDF, ask questions, inspect retrieved chunks + reasoning trace
+- 💾 **Persistent Index** — FAISS index saved to `vector_db/` and reloaded between sessions
 
 ---
 
@@ -20,19 +21,34 @@ An intelligent Retrieval-Augmented Generation (RAG) system powered by Groq's ult
 
 ```
 AgenticRag/
-├── app/                         # Streamlit application
+├── app/
+│   └── main.py                  # Streamlit UI
 ├── src/
-│   ├── __init__.py
-│   └── llm/
-│       ├── __init__.py
-│       ├── groq_client.py       # Groq LLM client
-│       └── test_groq.py         # Smoke test
+│   ├── agent/
+│   │   ├── agent.py             # Agentic loop (Think→Retrieve→Evaluate→Answer)
+│   │   ├── tools.py             # Retrieval tool
+│   │   └── prompts.py           # System + structured prompts
+│   ├── embeddings/
+│   │   └── embedder.py          # all-MiniLM-L6-v2 sentence embeddings
+│   ├── ingestion/
+│   │   ├── loader.py            # PDF loader & validator
+│   │   ├── parser.py            # Text + table + image extractor
+│   │   ├── chunking.py          # Overlapping chunk splitter
+│   │   └── run_ingestion.py     # CLI ingestion runner
+│   ├── llm/
+│   │   ├── groq_client.py       # Groq API client (llama3-70b-8192)
+│   │   └── test_groq.py         # LLM smoke test
+│   ├── retriever/
+│   │   ├── retriever.py         # Build + query FAISS index
+│   │   └── test_retrieval.py    # Retrieval smoke test
+│   └── vectorstore/
+│       └── vectordb.py          # FAISS index + JSON metadata store
 ├── data/
-│   ├── raw_pdfs/                # Upload your source PDFs here
-│   └── processed/               # Auto-generated (git-ignored)
-├── vector_db/                   # Persistent vector store (git-ignored)
-├── requirements.txt             # Python dependencies
-├── .env                         # Environment variables (NOT committed)
+│   ├── raw_pdfs/                # Drop PDFs here
+│   └── processed/               # Auto-generated chunks JSON (git-ignored)
+├── vector_db/                   # FAISS index files (git-ignored)
+├── requirements.txt
+├── .env                         # GROQ_API_KEY (never committed)
 ├── .gitignore
 └── README.md
 ```
