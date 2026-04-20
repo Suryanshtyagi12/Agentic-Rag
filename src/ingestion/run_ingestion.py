@@ -1,4 +1,4 @@
-"""
+﻿"""
 run_ingestion.py
 ----------------
 CLI entry-point for the full PDF ingestion pipeline.
@@ -35,10 +35,10 @@ def run_pipeline(pdf_path: str) -> Path:
     Execute the full ingestion pipeline for a single PDF.
 
     Steps:
-        1. Load    — validate and open the PDF
-        2. Parse   — extract text, tables, images
-        3. Chunk   — split into overlapping chunks
-        4. Save    — write JSON to data/processed/
+        1. Load    -- validate and open the PDF
+        2. Parse   -- extract text, tables, images
+        3. Chunk   -- split into overlapping chunks
+        4. Save    -- write JSON to data/processed/
 
     Args:
         pdf_path: Path to the input PDF (relative or absolute).
@@ -47,7 +47,7 @@ def run_pipeline(pdf_path: str) -> Path:
         Path to the saved output JSON file.
     """
     print("=" * 60)
-    print("  AgenticRag — PDF Ingestion Pipeline")
+    print("  AgenticRag -- PDF Ingestion Pipeline")
     print("=" * 60)
     t_start = time.time()
 
@@ -58,12 +58,12 @@ def run_pipeline(pdf_path: str) -> Path:
     # ── Step 2: Parse ───────────────────────────────────────────
     print("\n[Step 2/3] Parsing PDF ...")
     elements = parse_pdf(path)
-    print(f"           → {len(elements)} elements extracted")
+    print(f"           -> {len(elements)} elements extracted")
 
     # ── Step 3: Chunk ───────────────────────────────────────────
     print("\n[Step 3/3] Chunking content ...")
     chunks = chunk_elements(elements)
-    print(f"           → {len(chunks)} chunks created")
+    print(f"           -> {len(chunks)} chunks created")
 
     # ── Save ─────────────────────────────────────────────────────
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
@@ -75,7 +75,7 @@ def run_pipeline(pdf_path: str) -> Path:
     t_elapsed = time.time() - t_start
 
     print("\n" + "=" * 60)
-    print(f"  ✓ Pipeline complete in {t_elapsed:.2f}s")
+    print(f"  [OK] Pipeline complete in {t_elapsed:.2f}s")
     print(f"  Output  : {output_file}")
     print(f"  Chunks  : {len(chunks)}")
     print(f"  Elements: {len(elements)}")
@@ -94,15 +94,15 @@ def main():
 
     try:
         output = run_pipeline(pdf_path)
-        print(f"\n[✓] Saved to: {output}")
+        print(f"\n[[OK]] Saved to: {output}")
     except FileNotFoundError as e:
-        print(f"\n[✗] File error: {e}")
+        print(f"\n[[FAIL]] File error: {e}")
         sys.exit(1)
     except ValueError as e:
-        print(f"\n[✗] Value error: {e}")
+        print(f"\n[[FAIL]] Value error: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"\n[✗] Unexpected error: {type(e).__name__}: {e}")
+        print(f"\n[[FAIL]] Unexpected error: {type(e).__name__}: {e}")
         sys.exit(1)
 
 

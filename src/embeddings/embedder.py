@@ -1,4 +1,4 @@
-"""
+﻿"""
 embedder.py
 -----------
 Generates dense vector embeddings using sentence-transformers.
@@ -16,7 +16,7 @@ from sentence_transformers import SentenceTransformer
 # ---------------------------------------------------------------------------
 MODEL_NAME = "all-MiniLM-L6-v2"
 BATCH_SIZE  = 64          # tune down if you hit memory limits
-NORMALIZE   = True        # L2-normalise → cosine sim == dot product
+NORMALIZE   = True        # L2-normalise -> cosine sim == dot product
 
 
 # ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ def _get_model() -> SentenceTransformer:
     if _model is None:
         print(f"[embedder] Loading model: {MODEL_NAME} ...")
         _model = SentenceTransformer(MODEL_NAME)
-        print(f"[embedder] ✓ Model loaded  (dim={_model.get_sentence_embedding_dimension()})")
+        print(f"[embedder] [OK] Model loaded  (dim={_model.get_sentence_embedding_dimension()})")
     return _model
 
 
@@ -65,7 +65,7 @@ def embed(texts: List[str]) -> np.ndarray:
         convert_to_numpy=True,
     )
 
-    print(f"[embedder] ✓ Embeddings shape: {vectors.shape}")
+    print(f"[embedder] [OK] Embeddings shape: {vectors.shape}")
     return vectors.astype(np.float32)
 
 

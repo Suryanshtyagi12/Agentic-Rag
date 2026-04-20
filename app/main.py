@@ -7,8 +7,16 @@ Run with:
     streamlit run app/main.py
 """
 
+# ── Force UTF-8 on Windows (fixes charmap errors with ✓ etc.) ───────────────
 import sys
 import os
+
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import json
 import tempfile
 import time
@@ -421,11 +429,12 @@ for item in st.session_state.chat_history:
         )
 
         # Metrics row
+        fallback_badge = '<div class="metric-pill" style="color:#f87171">Fallback used</div>' if r.fallback_used else ""
         st.markdown(
             f'<div class="metric-row" style="margin-top:12px">'
             f'<div class="metric-pill">Iterations <span>{r.iterations}</span></div>'
             f'<div class="metric-pill">Chunks retrieved <span>{len(r.retrieved_chunks)}</span></div>'
-            f'{"<div class=\"metric-pill\" style=\"color:#f87171\">Fallback used</div>" if r.fallback_used else ""}'
+            f'{fallback_badge}'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -434,13 +443,20 @@ for item in st.session_state.chat_history:
         if r.retrieved_chunks:
             with st.expander(f"📚 Retrieved Chunks ({len(r.retrieved_chunks)})", expanded=False):
                 for chunk in r.retrieved_chunks:
+                    rank      = chunk["_rank"]
+                    page      = chunk.get("page", "?")
+                    ctype     = chunk.get("type", "text")
+                    score     = chunk["_score"]
+                    content   = chunk["content"]
+                    preview   = content[:500]
+                    ellipsis  = "..." if len(content) > 500 else ""
                     st.markdown(
                         f'<div class="chunk-card">'
-                        f'<span class="chunk-badge">#{chunk["_rank"]}</span>'
-                        f'<span class="chunk-badge">Page {chunk.get("page","?")}</span>'
-                        f'<span class="chunk-badge">{chunk.get("type","text")}</span>'
-                        f'<span class="score-badge">score {chunk["_score"]:.4f}</span>'
-                        f'<div style="margin-top:10px;color:#cbd5e1;line-height:1.6">{chunk["content"][:500]}{"..." if len(chunk["content"]) > 500 else ""}</div>'
+                        f'<span class="chunk-badge">#{rank}</span>'
+                        f'<span class="chunk-badge">Page {page}</span>'
+                        f'<span class="chunk-badge">{ctype}</span>'
+                        f'<span class="score-badge">score {score:.4f}</span>'
+                        f'<div style="margin-top:10px;color:#cbd5e1;line-height:1.6">{preview}{ellipsis}</div>'
                         f'</div>',
                         unsafe_allow_html=True,
                     )

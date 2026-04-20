@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_groq.py
 ------------
 Smoke-test for the Groq LLM client.
@@ -37,19 +37,19 @@ def run_test() -> None:
     try:
         print("\n[*] Sending prompt: 'What is RAG?'\n")
         response = generate_response(messages)
-        print("[✓] Response received:\n")
+        print("[[OK]] Response received:\n")
         print(response)
         print("\n" + "=" * 60)
         print("  Test PASSED")
         print("=" * 60)
 
     except EnvironmentError as e:
-        print(f"\n[✗] Configuration error:\n    {e}")
-        print("\nFix: Add your key to .env → GROQ_API_KEY=<your_key>")
+        print(f"\n[[FAIL]] Configuration error:\n    {e}")
+        print("\nFix: Add your key to .env -> GROQ_API_KEY=<your_key>")
         sys.exit(1)
 
     except RuntimeError as e:
-        print(f"\n[✗] API error:\n    {e}")
+        print(f"\n[[FAIL]] API error:\n    {e}")
         sys.exit(1)
 
 

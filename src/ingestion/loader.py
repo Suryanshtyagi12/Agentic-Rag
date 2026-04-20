@@ -1,4 +1,4 @@
-"""
+﻿"""
 loader.py
 ---------
 Responsible for loading a PDF file from disk and validating it
@@ -32,6 +32,6 @@ def load_pdf(pdf_path: str) -> Path:
         raise ValueError(f"[loader] Expected a .pdf file, got: {path.suffix}")
 
     file_size_kb = path.stat().st_size / 1024
-    print(f"[loader] ✓ Loaded: {path.name} ({file_size_kb:.1f} KB)")
+    print(f"[loader] [OK] Loaded: {path.name} ({file_size_kb:.1f} KB)")
 
     return path

@@ -1,4 +1,4 @@
-"""
+﻿"""
 chunking.py
 -----------
 Splits parsed PDF elements into overlapping text chunks suitable
@@ -89,9 +89,9 @@ def chunk_elements(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     Take the flat list of parsed PDF elements and produce overlapping chunks.
 
     Rules:
-      - "text"  elements → split into multiple chunks if large
-      - "table" elements → kept as a single chunk (splitting tables breaks them)
-      - "image" elements → kept as a single chunk (caption only)
+      - "text"  elements -> split into multiple chunks if large
+      - "table" elements -> kept as a single chunk (splitting tables breaks them)
+      - "image" elements -> kept as a single chunk (caption only)
 
     Args:
         elements: Output of parser.parse_pdf()
@@ -112,7 +112,7 @@ def chunk_elements(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             # Split long text into overlapping sub-chunks
             sub_chunks = _split_text(content)
             print(
-                f"   [chunking] Page {page} text → "
+                f"   [chunking] Page {page} text -> "
                 f"{len(sub_chunks)} chunks ({len(content)} chars)"
             )
             for sub in sub_chunks:
@@ -136,7 +136,7 @@ def chunk_elements(elements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             chunk_id += 1
 
     print(
-        f"[chunking] ✓ Created {len(all_chunks)} chunks "
+        f"[chunking] [OK] Created {len(all_chunks)} chunks "
         f"(avg {sum(c['char_count'] for c in all_chunks) // max(len(all_chunks), 1)} chars each)"
     )
     return all_chunks

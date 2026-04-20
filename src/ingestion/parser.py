@@ -1,9 +1,9 @@
-"""
+﻿"""
 parser.py
 ---------
 Extracts text, tables, and images from a PDF using:
-  - PyMuPDF  (fitz) → text & image extraction
-  - pdfplumber       → table extraction
+  - PyMuPDF  (fitz) -> text & image extraction
+  - pdfplumber       -> table extraction
 
 Output format per element:
     {
@@ -88,7 +88,7 @@ def _extract_images(page_fitz, page_num: int) -> List[Dict[str, Any]]:
             f"[Image {idx} on page {page_num}] "
             f"Dimensions: {width}x{height}px, "
             f"Color space: {color_space}. "
-            f"(Visual content — refer to original PDF for details.)"
+            f"(Visual content -- refer to original PDF for details.)"
         )
         print(f"   [parser] Image {idx} found on page {page_num} ({width}x{height})")
         elements.append({
@@ -145,7 +145,7 @@ def parse_pdf(pdf_path: Path) -> List[Dict[str, Any]]:
     image_count = sum(1 for e in elements if e["type"] == "image")
 
     print(
-        f"[parser] ✓ Extraction complete — "
+        f"[parser] [OK] Extraction complete -- "
         f"{text_count} text blocks, {table_count} tables, {image_count} images"
     )
     return elements

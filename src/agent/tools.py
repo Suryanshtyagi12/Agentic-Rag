@@ -1,4 +1,4 @@
-"""
+﻿"""
 tools.py
 --------
 Tool functions available to the agent.
@@ -44,12 +44,12 @@ def retrieval_tool(
     except Exception as exc:
         raise RuntimeError(f"[tool:retrieval] Retrieval failed: {exc}") from exc
 
-    print(f"[tool:retrieval] ✓ Retrieved {len(results)} chunks")
+    print(f"[tool:retrieval] [OK] Retrieved {len(results)} chunks")
     return results
 
 
 # ---------------------------------------------------------------------------
-# Tool registry  (extensible — add more tools here later)
+# Tool registry  (extensible -- add more tools here later)
 # ---------------------------------------------------------------------------
 
 TOOL_REGISTRY = {

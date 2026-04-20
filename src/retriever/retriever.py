@@ -1,4 +1,4 @@
-"""
+﻿"""
 retriever.py
 ------------
 High-level retriever that wraps VectorDB + Embedder into a single
@@ -25,7 +25,7 @@ from src.vectorstore.vectordb import VectorDB
 
 class Retriever:
     """
-    Orchestrates embedding → indexing → retrieval.
+    Orchestrates embedding -> indexing -> retrieval.
 
     Args:
         index_name: Name used for FAISS index files in vector_db/.
@@ -37,7 +37,7 @@ class Retriever:
         self._loaded = False
 
     # ------------------------------------------------------------------
-    # Build path  (ingest → embed → store)
+    # Build path  (ingest -> embed -> store)
     # ------------------------------------------------------------------
 
     def build_from_chunks(self, chunks: List[Dict[str, Any]]) -> None:
@@ -45,7 +45,7 @@ class Retriever:
         Embed all chunks and persist the FAISS index.
 
         Args:
-            chunks: Output of chunking.chunk_elements() — list of dicts,
+            chunks: Output of chunking.chunk_elements() -- list of dicts,
                     each with at least a "content" key.
         """
         print(f"[retriever] Building index '{self.index_name}' from {len(chunks)} chunks ...")
@@ -57,10 +57,10 @@ class Retriever:
         self._db.save_index()
         self._loaded = True
 
-        print(f"[retriever] ✓ Index ready — {self._db.total_vectors} vectors stored")
+        print(f"[retriever] [OK] Index ready -- {self._db.total_vectors} vectors stored")
 
     # ------------------------------------------------------------------
-    # Query path  (embed → search)
+    # Query path  (embed -> search)
     # ------------------------------------------------------------------
 
     def load(self) -> None:
@@ -93,7 +93,7 @@ class Retriever:
         query_vec = embed_single(query)             # (384,) float32
         results   = self._db.similarity_search(query_vec, k=top_k)
 
-        print(f"[retriever] ✓ Retrieved {len(results)} results")
+        print(f"[retriever] [OK] Retrieved {len(results)} results")
         return results
 
     # ------------------------------------------------------------------

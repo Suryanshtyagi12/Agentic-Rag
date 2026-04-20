@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_retrieval.py
 -----------------
 End-to-end smoke test for the retrieval pipeline.
@@ -85,7 +85,7 @@ TOP_K        = 3
 
 def run_test():
     print("=" * 60)
-    print("  AgenticRag — Retrieval Smoke Test")
+    print("  AgenticRag -- Retrieval Smoke Test")
     print("=" * 60)
 
     # ── Build ────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ def run_test():
     print(context)
 
     print("\n" + "=" * 60)
-    print("  ✓ Retrieval test PASSED")
+    print("  [OK] Retrieval test PASSED")
     print("=" * 60)
 
 
@@ -121,5 +121,5 @@ if __name__ == "__main__":
     try:
         run_test()
     except Exception as e:
-        print(f"\n[✗] Test FAILED: {type(e).__name__}: {e}")
+        print(f"\n[[FAIL]] Test FAILED: {type(e).__name__}: {e}")
         sys.exit(1)

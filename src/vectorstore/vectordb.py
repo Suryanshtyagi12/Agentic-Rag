@@ -1,11 +1,11 @@
-"""
+﻿"""
 vectordb.py
 -----------
 FAISS-backed vector store with metadata side-car.
 
 Persists two files to vector_db/:
-    <name>.index     — FAISS flat index (Inner Product on L2-normalised vecs)
-    <name>.meta.json — list of metadata dicts, one per vector
+    <name>.index     -- FAISS flat index (Inner Product on L2-normalised vecs)
+    <name>.meta.json -- list of metadata dicts, one per vector
 
 Design notes:
   • IVFFlat is used when n_vectors > IVFFLAT_THRESHOLD for faster search.
@@ -114,14 +114,14 @@ class VectorDB:
         self._index.add(embeddings)
         self._metadata.extend(chunks)
 
-        print(f"[vectordb] ✓ Added {n} vectors  (total: {self._index.ntotal})")
+        print(f"[vectordb] [OK] Added {n} vectors  (total: {self._index.ntotal})")
 
     def save_index(self) -> None:
         """Persist the FAISS index and metadata JSON to disk."""
         VECTOR_DB_DIR.mkdir(parents=True, exist_ok=True)
 
         if self._index is None or self._index.ntotal == 0:
-            raise RuntimeError("[vectordb] Nothing to save — index is empty.")
+            raise RuntimeError("[vectordb] Nothing to save -- index is empty.")
 
         faiss.write_index(self._index, str(self.index_path))
 
@@ -129,8 +129,8 @@ class VectorDB:
             json.dump(self._metadata, f, ensure_ascii=False, indent=2)
 
         idx_kb = self.index_path.stat().st_size / 1024
-        print(f"[vectordb] ✓ Index  saved → {self.index_path} ({idx_kb:.1f} KB)")
-        print(f"[vectordb] ✓ Metadata saved → {self.meta_path}")
+        print(f"[vectordb] [OK] Index  saved -> {self.index_path} ({idx_kb:.1f} KB)")
+        print(f"[vectordb] [OK] Metadata saved -> {self.meta_path}")
 
     def load_index(self) -> None:
         """Load FAISS index and metadata from disk."""
@@ -146,7 +146,7 @@ class VectorDB:
             self._metadata = json.load(f)
 
         print(
-            f"[vectordb] ✓ Loaded index '{self.index_name}' — "
+            f"[vectordb] [OK] Loaded index '{self.index_name}' -- "
             f"{self._index.ntotal} vectors, {len(self._metadata)} metadata records"
         )
 
@@ -164,8 +164,8 @@ class VectorDB:
 
         Returns:
             List of dicts, each containing original chunk metadata plus:
-                "_score"   : float  — inner product similarity (higher = better)
-                "_rank"    : int    — 1-indexed rank
+                "_score"   : float  -- inner product similarity (higher = better)
+                "_rank"    : int    -- 1-indexed rank
         """
         if self._index is None:
             raise RuntimeError("[vectordb] Index not loaded. Call load_index() first.")

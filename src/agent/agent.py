@@ -1,13 +1,13 @@
-"""
+﻿"""
 agent.py
 --------
-Agentic RAG pipeline: Think → Retrieve → Evaluate → Answer
+Agentic RAG pipeline: Think -> Retrieve -> Evaluate -> Answer
 
 Loop runs up to MAX_ITERATIONS. On each pass:
-  1. THINK     — the LLM analyses the query and extracts key search terms
-  2. RETRIEVE  — the retrieval tool fetches relevant chunks
-  3. EVALUATE  — the LLM judges whether the context is sufficient
-  4. ANSWER    — if sufficient (or max iterations reached), generate final answer
+  1. THINK     -- the LLM analyses the query and extracts key search terms
+  2. RETRIEVE  -- the retrieval tool fetches relevant chunks
+  3. EVALUATE  -- the LLM judges whether the context is sufficient
+  4. ANSWER    -- if sufficient (or max iterations reached), generate final answer
 
 Returns a structured AgentResult for easy consumption by the UI.
 """
@@ -90,7 +90,7 @@ def run_agent(query: str, retriever: Retriever) -> AgentResult:
         AgentResult with answer, retrieved chunks, and reasoning trace.
     """
     print("\n" + "=" * 60)
-    print("  Agentic RAG — Starting Loop")
+    print("  Agentic RAG -- Starting Loop")
     print(f"  Query: {query[:80]}")
     print("=" * 60)
 
@@ -132,7 +132,7 @@ def run_agent(query: str, retriever: Retriever) -> AgentResult:
         eval_output    = _llm(AGENT_SYSTEM_PROMPT, eval_prompt)
         result.evaluate_output = eval_output
         is_sufficient  = "SUFFICIENT" in eval_output.upper() and "INSUFFICIENT" not in eval_output.upper()
-        print(f"[agent] Evaluation: {'✓ SUFFICIENT' if is_sufficient else '✗ INSUFFICIENT'}")
+        print(f"[agent] Evaluation: {'[OK] SUFFICIENT' if is_sufficient else '[FAIL] INSUFFICIENT'}")
 
         # ── STEP 4: ANSWER or LOOP ─────────────────────────────────────────
         if is_sufficient or iteration == MAX_ITERATIONS:
@@ -146,8 +146,8 @@ def run_agent(query: str, retriever: Retriever) -> AgentResult:
             break
         else:
             # Refine query for next iteration using missing info from eval
-            print("[agent] Context insufficient — refining query for next iteration ...")
+            print("[agent] Context insufficient -- refining query for next iteration ...")
             query = f"{query}. Additional focus: {eval_output.replace('INSUFFICIENT', '').strip()}"
 
-    print(f"\n[agent] ✓ Done in {result.iterations} iteration(s)")
+    print(f"\n[agent] [OK] Done in {result.iterations} iteration(s)")
     return result
