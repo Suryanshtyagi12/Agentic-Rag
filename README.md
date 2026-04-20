@@ -20,14 +20,19 @@ An intelligent Retrieval-Augmented Generation (RAG) system powered by Groq's ult
 
 ```
 AgenticRag/
-├── app/                  # Streamlit application
-├── src/                  # Core source modules
+├── app/                         # Streamlit application
+├── src/
+│   ├── __init__.py
+│   └── llm/
+│       ├── __init__.py
+│       ├── groq_client.py       # Groq LLM client
+│       └── test_groq.py         # Smoke test
 ├── data/
-│   ├── raw_pdfs/         # Upload your source PDFs here
-│   └── processed/        # Auto-generated processed chunks
-├── vector_db/            # Persistent vector store
-├── requirements.txt      # Python dependencies
-├── .env                  # Environment variables (NOT committed)
+│   ├── raw_pdfs/                # Upload your source PDFs here
+│   └── processed/               # Auto-generated (git-ignored)
+├── vector_db/                   # Persistent vector store (git-ignored)
+├── requirements.txt             # Python dependencies
+├── .env                         # Environment variables (NOT committed)
 ├── .gitignore
 └── README.md
 ```
@@ -65,13 +70,37 @@ pip install -r requirements.txt
 
 ### 4. Configure Environment Variables
 
-Copy the `.env` template and add your keys:
-```bash
-# Edit .env and add your GROQ_API_KEY
+Open the `.env` file at the project root and add your Groq API key:
+```env
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### 5. Run the App
+> ⚠️ **Never commit `.env`** — it is listed in `.gitignore` and will never be tracked by Git.
+
+### 5. Test the LLM Connection
+
+Verify that your Groq API key works before running the full app:
+```bash
+python src/llm/test_groq.py
+```
+
+Expected output:
+```
+============================================================
+  Groq LLM Smoke Test
+  Model : llama3-70b-8192
+============================================================
+
+[*] Sending prompt: 'What is RAG?'
+
+[✓] Response received:
+...
+============================================================
+  Test PASSED
+============================================================
+```
+
+### 6. Run the App
 
 ```bash
 streamlit run app/main.py
@@ -83,20 +112,29 @@ streamlit run app/main.py
 
 1. Visit [https://console.groq.com](https://console.groq.com)
 2. Sign up / Log in
-3. Navigate to **API Keys** and generate a new key
-4. Paste it in your `.env` file
+3. Navigate to **API Keys** → **Create API Key**
+4. Copy the key and paste it into your `.env` file:
+   ```env
+   GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   ```
+5. The key is loaded automatically via `python-dotenv` — no manual export needed
+
+> 💡 The model used is `llama3-70b-8192` — Groq's fastest large-context LLaMA 3 endpoint.
 
 ---
 
 ## 📦 Tech Stack
 
-| Component     | Technology        |
-|---------------|-------------------|
-| LLM Backend   | Groq (LLaMA 3)    |
-| UI Framework  | Streamlit         |
-| Vector Store  | ChromaDB / FAISS  |
-| Embeddings    | HuggingFace / OpenAI |
-| PDF Parsing   | PyMuPDF / pdfplumber |
+| Component       | Technology                     |
+|-----------------|--------------------------------|
+| LLM Backend     | Groq — `llama3-70b-8192`       |
+| UI Framework    | Streamlit                      |
+| Vector Store    | FAISS (`faiss-cpu`)            |
+| Embeddings      | `sentence-transformers`        |
+| PDF Parsing     | PyMuPDF + pdfplumber           |
+| OCR             | pytesseract + Pillow           |
+| Env Management  | `python-dotenv`                |
+| Data Processing | NumPy + Pandas                 |
 
 ---
 

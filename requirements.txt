@@ -2,21 +2,32 @@
 # Run: pip install -r requirements.txt
 
 # ----------------------------
-# Core
+# UI
 # ----------------------------
+streamlit
 
 # ----------------------------
 # LLM & Groq
 # ----------------------------
+groq
+python-dotenv
 
 # ----------------------------
 # Vector Store & Embeddings
 # ----------------------------
+faiss-cpu
+sentence-transformers
 
 # ----------------------------
-# UI
+# PDF Processing
 # ----------------------------
+pymupdf
+pdfplumber
+pillow
+pytesseract
 
 # ----------------------------
-# Utilities
+# Data
 # ----------------------------
+numpy
+pandas
