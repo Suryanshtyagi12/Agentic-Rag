@@ -28,11 +28,13 @@ import streamlit as st
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.ingestion.loader    import load_pdf
-from src.ingestion.parser    import parse_pdf
-from src.ingestion.chunking  import chunk_elements
-from src.retriever.retriever import Retriever
-from src.agent.agent         import run_agent, AgentResult
+from src.ingestion.loader        import load_pdf
+from src.ingestion.parser        import parse_pdf
+from src.ingestion.chunking      import chunk_elements
+from src.ingestion.run_ingestion import _cache_path_for, _load_from_cache  # caching helpers
+from src.retriever.retriever     import Retriever
+from src.agent.agent             import run_agent, AgentResult
+from src.llm.groq_client         import MODEL_NAME as ACTIVE_MODEL  # live model name
 
 # ── Constants ────────────────────────────────────────────────────────────────
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
@@ -228,13 +230,29 @@ def _init_state():
 _init_state()
 
 
-# ── Cached model / retriever helpers ─────────────────────────────────────────
+# ── Cached resource helpers ─────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
 def get_cached_retriever(index_name: str) -> Retriever:
-    """Load an existing FAISS index once and cache across reruns."""
+    """Load an existing FAISS index once and cache it across reruns."""
     r = Retriever(index_name=index_name)
     r.load()
     return r
+
+
+@st.cache_resource(show_spinner=False)
+def get_cached_embedder():
+    """
+    Load the sentence-transformer model ONCE and keep it in memory.
+    Subsequent ingestions reuse the cached model (saves ~10-20s per run).
+    """
+    from sentence_transformers import SentenceTransformer
+    print("[app] Loading embedding model (cached) ...")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    # Monkey-patch the module-level singleton so embedder.py reuses this instance
+    import src.embeddings.embedder as emb_module
+    emb_module._model = model
+    print("[app] Embedding model ready.")
+    return model
 
 
 # ── Ingestion pipeline ────────────────────────────────────────────────────────
@@ -254,36 +272,44 @@ def run_ingestion_pipeline(uploaded_file) -> bool:
         log.append(f"✓ PDF saved temporarily → {Path(tmp_path).name}")
         progress.progress(10, "PDF saved ...")
 
-        # 2. Load
+        # 2. Load + validate
         pdf_path = load_pdf(tmp_path)
         log.append(f"✓ Loaded: {pdf_path.name}")
-        progress.progress(25, "PDF validated ...")
+        progress.progress(20, "PDF validated ...")
 
-        # 3. Parse
-        elements = parse_pdf(pdf_path)
-        log.append(f"✓ Parsed: {len(elements)} elements (text + tables + images)")
-        progress.progress(50, f"Parsed {len(elements)} elements ...")
+        # 3. Cache check — skip re-ingestion if same PDF was processed before
+        cache_file = _cache_path_for(pdf_path)
+        if cache_file.exists():
+            log.append(f"⚡ Cache hit — loading pre-processed chunks from {cache_file.name}")
+            progress.progress(60, "Loading from cache ...")
+            chunks = _load_from_cache(cache_file)
+            log.append(f"✓ Loaded {len(chunks)} cached chunks")
+        else:
+            # 4. Parse (parallel PyMuPDF)
+            elements = parse_pdf(pdf_path)
+            log.append(f"✓ Parsed: {len(elements)} elements (text + tables + images)")
+            progress.progress(50, f"Parsed {len(elements)} elements ...")
 
-        # 4. Chunk
-        chunks = chunk_elements(elements)
-        log.append(f"✓ Chunked: {len(chunks)} chunks created")
-        progress.progress(65, f"Created {len(chunks)} chunks ...")
+            # 5. Chunk (fast char-based)
+            chunks = chunk_elements(elements)
+            log.append(f"✓ Chunked: {len(chunks)} chunks created")
+            progress.progress(65, f"Created {len(chunks)} chunks ...")
 
-        # 5. Save processed JSON
-        PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-        out_json = PROCESSED_DIR / f"{pdf_path.stem}_chunks.json"
-        with open(out_json, "w", encoding="utf-8") as f:
-            json.dump(chunks, f, ensure_ascii=False, indent=2)
-        log.append(f"✓ Chunks saved → {out_json.name}")
-        progress.progress(75, "Chunks saved ...")
+            # 6. Save processed JSON cache
+            PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+            with open(cache_file, "w", encoding="utf-8") as f:
+                json.dump(chunks, f, ensure_ascii=False, indent=2)
+            log.append(f"✓ Chunks cached → {cache_file.name}")
 
-        # 6. Embed + index
+        progress.progress(75, "Building FAISS index ...")
+
+        # 7. Embed + index
         retriever = Retriever(index_name=INDEX_NAME)
         retriever.build_from_chunks(chunks)
         log.append(f"✓ FAISS index built — {len(chunks)} vectors")
         progress.progress(95, "Index built ...")
 
-        # 7. Store in session
+        # 8. Store in session
         st.session_state.retriever    = retriever
         st.session_state.index_ready  = True
         st.session_state.pdf_name     = uploaded_file.name
@@ -318,7 +344,7 @@ with st.sidebar:
         st.markdown(
             f'<div class="metric-row">'
             f'<div class="metric-pill">Chunks <span>{st.session_state.total_chunks}</span></div>'
-            f'<div class="metric-pill">Model <span>LLaMA3-70B</span></div>'
+            f'<div class="metric-pill">Model <span>{ACTIVE_MODEL}</span></div>'
             f'</div>',
             unsafe_allow_html=True,
         )
