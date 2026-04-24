@@ -1,14 +1,15 @@
 """
 groq_client.py
 --------------
-Initializes the Groq LLM client and exposes a clean interface
-for generating chat completions.
+Groq LLM client with dynamic model selection, automatic fallback,
+and fail-safe error handling.
 
-CHANGES (v2):
-  - Replaced decommissioned model 'llama3-70b-8192' with 'llama-3.1-70b-versatile'
-  - Added fallback model 'mixtral-8x7b-32768' if primary fails
-  - Added automatic retry logic with clear deprecation messages
-  - Model and token config kept as top-level constants (not hardcoded in functions)
+Design principles:
+  - Model names are NEVER hardcoded inside functions — only in MODEL_CONFIG
+  - Primary model is tried first; fallback is used automatically on deprecation
+  - If BOTH models fail, a safe string is returned (no crash / RuntimeError)
+  - Model can be overridden at runtime via GROQ_MODEL env variable
+  - Full debug logging at every decision point
 """
 
 import os
@@ -18,32 +19,52 @@ from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
 # Load .env from the project root (2 levels up from this file)
-# Works regardless of where Streamlit sets the CWD
 # ---------------------------------------------------------------------------
 _ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 load_dotenv(dotenv_path=_ENV_PATH, override=True)
 
 # ---------------------------------------------------------------------------
-# Model Configuration
-# FIX: 'llama3-70b-8192' was decommissioned — replaced with supported models
+# Centralised Model Configuration
+# To change models: edit ONLY this dict — nowhere else.
 # ---------------------------------------------------------------------------
-MODEL_NAME     = "llama-3.1-70b-versatile"   # Primary (preferred)
-FALLBACK_MODEL = "mixtral-8x7b-32768"         # Fallback if primary fails
-MAX_TOKENS     = 1024
+MODEL_CONFIG = {
+    "primary" : "llama-3.1-8b-instant",  # Fast, currently active on Groq
+    "fallback" : "gemma2-9b-it",          # Stable Google Gemma 2 via Groq
+}
 
-# Keywords that indicate a model has been deprecated/decommissioned by Groq
-_DEPRECATION_KEYWORDS = (
+# Allow runtime override via environment variable:
+#   GROQ_MODEL=llama-3.1-8b-instant  (in .env or shell)
+_env_override = os.getenv("GROQ_MODEL", "").strip()
+if _env_override:
+    MODEL_CONFIG["primary"] = _env_override
+    print(f"[groq] Env override: GROQ_MODEL={_env_override}")
+
+# Convenience alias used externally (e.g. app/main.py badge)
+MODEL_NAME = MODEL_CONFIG["primary"]
+
+MAX_TOKENS = 1024
+
+# Error conditions that indicate a model is no longer available
+_DEPRECATION_SIGNALS = (
     "decommissioned",
     "deprecated",
-    "not supported",
+    "model_decommissioned",
+    "invalid_request_error",
     "model not found",
     "does not exist",
+    "not supported",
+)
+
+# Message returned to the caller when ALL models fail (never crashes the app)
+UNAVAILABLE_MSG = (
+    "LLM service temporarily unavailable. Please try again later."
 )
 
 
 # ---------------------------------------------------------------------------
-# Client initialization
+# Internal helpers
 # ---------------------------------------------------------------------------
+
 def _get_client() -> Groq:
     """
     Instantiate and return a Groq client.
@@ -59,85 +80,86 @@ def _get_client() -> Groq:
 
 
 def _is_deprecation_error(exc: Exception) -> bool:
-    """Return True if the exception looks like a model-deprecation error."""
+    """Return True if the exception signals a deprecated / decommissioned model."""
     msg = str(exc).lower()
-    return any(kw in msg for kw in _DEPRECATION_KEYWORDS)
+    return any(signal in msg for signal in _DEPRECATION_SIGNALS)
 
 
 def _call_model(client: Groq, model: str, messages: list) -> str:
-    """Make a single chat completion call and return the content string."""
-    chat_completion = client.chat.completions.create(
+    """Execute one chat-completion call and return the content string."""
+    completion = client.chat.completions.create(
         model=model,
         messages=messages,
         max_tokens=MAX_TOKENS,
     )
-    return chat_completion.choices[0].message.content
+    return completion.choices[0].message.content
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 def generate_response(messages: list) -> str:
     """
-    Send a list of chat messages to the Groq API and return the assistant reply.
+    Send messages to the Groq API and return the assistant reply.
 
-    Tries MODEL_NAME first; if that raises a deprecation / bad-request error,
-    automatically retries with FALLBACK_MODEL.
+    Execution order:
+      1. Try MODEL_CONFIG["primary"]  (or GROQ_MODEL env override)
+      2. On any deprecation/invalid error → retry with MODEL_CONFIG["fallback"]
+      3. If fallback also fails         → return UNAVAILABLE_MSG (no crash)
 
     Args:
-        messages: List of dicts following the OpenAI chat format, e.g.
-                  [{"role": "user", "content": "Hello!"}]
+        messages: List of dicts: [{"role": "user", "content": "..."}]
 
     Returns:
-        The assistant's response as a plain string.
+        Assistant reply string, or UNAVAILABLE_MSG if all models fail.
 
     Raises:
-        EnvironmentError: If GROQ_API_KEY is missing.
-        RuntimeError:     If both primary and fallback API calls fail.
+        EnvironmentError: Only if GROQ_API_KEY is missing.
     """
+    primary  = MODEL_CONFIG["primary"]
+    fallback = MODEL_CONFIG["fallback"]
+
     try:
         client = _get_client()
-
-        # ── Attempt 1: Primary model ────────────────────────────────────────
-        try:
-            print(f"[groq] Using model: {MODEL_NAME}")
-            return _call_model(client, MODEL_NAME, messages)
-
-        except Exception as primary_exc:
-            # If it looks like the model was deprecated, warn and retry
-            if _is_deprecation_error(primary_exc):
-                print(
-                    f"[groq] WARNING: Model deprecated or unavailable — "
-                    f"'{MODEL_NAME}'. Switching to fallback: '{FALLBACK_MODEL}'"
-                )
-            else:
-                # Non-deprecation error on primary → still try fallback once
-                print(
-                    f"[groq] Primary model failed ({type(primary_exc).__name__}). "
-                    f"Retrying with fallback: '{FALLBACK_MODEL}'"
-                )
-
-            # ── Attempt 2: Fallback model ───────────────────────────────────
-            try:
-                print(f"[groq] Using fallback model: {FALLBACK_MODEL}")
-                return _call_model(client, FALLBACK_MODEL, messages)
-
-            except Exception as fallback_exc:
-                # Both models failed — raise a clear combined error
-                raise RuntimeError(
-                    f"Both models failed.\n"
-                    f"  Primary  ({MODEL_NAME}): {primary_exc}\n"
-                    f"  Fallback ({FALLBACK_MODEL}): {fallback_exc}"
-                ) from fallback_exc
-
     except EnvironmentError:
-        # Re-raise config errors as-is so callers can handle them distinctly
-        raise
+        raise  # Config error — surface immediately, don't swallow
 
-    except RuntimeError:
-        raise
+    # ── Attempt 1: Primary model ─────────────────────────────────────────────
+    try:
+        print(f"[groq] Trying primary model: {primary}")
+        response = _call_model(client, primary, messages)
+        print(f"[groq] Success with primary model: {primary}")
+        return response
 
-    except Exception as exc:
-        raise RuntimeError(
-            f"Groq API call failed: {type(exc).__name__} — {exc}"
-        ) from exc
+    except Exception as primary_exc:
+        short_err = str(primary_exc)[:200]
+        if _is_deprecation_error(primary_exc):
+            print(
+                f"[groq] PRIMARY MODEL DECOMMISSIONED: '{primary}'\n"
+                f"        Error: {short_err}\n"
+                f"        → Switching to fallback: '{fallback}'"
+            )
+        else:
+            print(
+                f"[groq] Primary model failed ({type(primary_exc).__name__}): {short_err}\n"
+                f"        → Retrying with fallback: '{fallback}'"
+            )
+
+    # ── Attempt 2: Fallback model ────────────────────────────────────────────
+    try:
+        print(f"[groq] Trying fallback model: {fallback}")
+        response = _call_model(client, fallback, messages)
+        print(f"[groq] Success with fallback model: {fallback}")
+        return response
+
+    except Exception as fallback_exc:
+        short_err = str(fallback_exc)[:200]
+        print(
+            f"[groq] FALLBACK MODEL ALSO FAILED: '{fallback}'\n"
+            f"        Error: {short_err}\n"
+            f"        → Returning safe unavailable message."
+        )
+
+    # ── Fail-safe: both models failed ───────────────────────────────────────
+    return UNAVAILABLE_MSG
