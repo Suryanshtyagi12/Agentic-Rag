@@ -34,7 +34,9 @@ from src.ingestion.chunking      import chunk_elements
 from src.ingestion.run_ingestion import _cache_path_for, _load_from_cache  # caching helpers
 from src.retriever.retriever     import Retriever
 from src.agent.agent             import run_agent, AgentResult
-from src.llm.groq_client         import MODEL_NAME as ACTIVE_MODEL  # live model name
+from src.llm.groq_client         import MODEL_CONFIG  # centralised model config
+import os as _os
+ACTIVE_MODEL = _os.getenv("GROQ_MODEL", MODEL_CONFIG["primary"])  # respects env override
 
 # ── Constants ────────────────────────────────────────────────────────────────
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
