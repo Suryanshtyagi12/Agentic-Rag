@@ -5,7 +5,8 @@
 An intelligent Retrieval-Augmented Generation (RAG) system powered by Groq's ultra-fast inference and an interactive Streamlit frontend. This project uses an agentic pipeline to process, embed, retrieve, and reason over custom PDF documents.
 
 ---
-
+🔗 Live Demo
+👉 Demo Link: https://agentic-rag-l34fp6ukcntxfxanq4jzdc.streamlit.app/
 ## 🚀 Features
 
 - 📄 **PDF Ingestion** — text, tables (pdfplumber), and images (PyMuPDF) extracted and chunked
